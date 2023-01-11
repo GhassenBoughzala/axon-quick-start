@@ -1,7 +1,6 @@
 package io.axoniq.labs.chat.commandmodel;
 
-import io.axoniq.labs.chat.coreapi.CreateRoomCommand;
-import io.axoniq.labs.chat.coreapi.RoomCreatedEvent;
+import io.axoniq.labs.chat.coreapi.*;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -14,17 +13,55 @@ public class ChatRoom {
     @AggregateIdentifier
     private String roomId;
     private boolean roomConfirmed;
+    private String parJoined;
+    private String msg;
+
 
     @CommandHandler
     public ChatRoom(CreateRoomCommand command){
         AggregateLifecycle.apply(new RoomCreatedEvent(command.getRoomId(), command.getName() ));
     }
-
     @EventSourcingHandler
     public void on(RoomCreatedEvent event){
         this.roomId = event.getRoomId();
         roomConfirmed = false;
     }
 
+    @CommandHandler
+    public ChatRoom(JoinRoomCommand command){
+        if(!command.getParticipant().equals("")){
+            AggregateLifecycle.apply(new ParticipantJoinedRoomEvent(command.getRoomId(), command.getParticipant()));
+        }
+    }
+    @EventSourcingHandler
+    public void on(ParticipantJoinedRoomEvent event){
+       this.parJoined = event.getParticipant();
+    }
+
+    @CommandHandler
+    public ChatRoom(LeaveRoomCommand command){
+        AggregateLifecycle.apply(new ParticipantLeftRoomEvent(command.getRoomId(), command.getParticipant()));
+    }
+    @EventSourcingHandler
+    public void on(ParticipantLeftRoomEvent event){
+        this.roomId = event.getRoomId();
+    }
+
+    @CommandHandler
+    public ChatRoom(PostMessageCommand command){
+        AggregateLifecycle.apply(new MessagePostedEvent(command.getRoomId(), command.getParticipant(), command.getMessage()));
+    }
+    @EventSourcingHandler
+    public void on(MessagePostedEvent event){
+        if (this.msg.equals(event.getMessage())){
+            throw new RuntimeException();
+        }
+        this.msg = event.getMessage();
+    }
+
+
+
     protected ChatRoom(){}
+
+
 }
