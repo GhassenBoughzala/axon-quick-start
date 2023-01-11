@@ -7,15 +7,18 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 
+import java.util.Set;
+
 @Aggregate
 public class ChatRoom {
 
     @AggregateIdentifier
     private String roomId;
     private boolean roomConfirmed;
-    private String parJoined;
+    private Set<String> participants;
     private String msg;
 
+    protected ChatRoom(){}
 
     @CommandHandler
     public ChatRoom(CreateRoomCommand command){
@@ -28,14 +31,14 @@ public class ChatRoom {
     }
 
     @CommandHandler
-    public ChatRoom(JoinRoomCommand command){
-        if(!command.getParticipant().equals("")){
+    public void handle(JoinRoomCommand command){
+        if(!participants.contains(command.getParticipant())){
             AggregateLifecycle.apply(new ParticipantJoinedRoomEvent(command.getRoomId(), command.getParticipant()));
         }
     }
     @EventSourcingHandler
     public void on(ParticipantJoinedRoomEvent event){
-       this.parJoined = event.getParticipant();
+      this.participants.add(event.getParticipant());
     }
 
     @CommandHandler
@@ -58,10 +61,5 @@ public class ChatRoom {
         }
         this.msg = event.getMessage();
     }
-
-
-
-    protected ChatRoom(){}
-
 
 }

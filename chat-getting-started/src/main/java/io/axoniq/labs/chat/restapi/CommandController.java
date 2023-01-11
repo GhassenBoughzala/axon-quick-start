@@ -1,12 +1,17 @@
 package io.axoniq.labs.chat.restapi;
 
+import com.google.common.base.Predicates;
+import io.axoniq.labs.chat.coreapi.CreateRoomCommand;
+import io.axoniq.labs.chat.coreapi.JoinRoomCommand;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
 import java.util.concurrent.Future;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -22,14 +27,17 @@ public class CommandController {
 
     @PostMapping("/rooms")
     public Future<String> createChatRoom(@RequestBody @Valid Room room) {
-        // TODO: Send a command for this API call.
-        throw new UnsupportedOperationException("Not implemented yet");
+        Assert.notNull(room.getName(),"Name is what it is ");
+        String roomId = room.getRoomId() == null ? UUID.randomUUID().toString() : room.getRoomId();
+        return commandGateway.send(new CreateRoomCommand(roomId,room.getName()));
+        //throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @PostMapping("/rooms/{roomId}/participants")
     public Future<Void> joinChatRoom(@PathVariable String roomId, @RequestBody @Valid Participant participant) {
-        // TODO: Send a command for this API call.
-        throw new UnsupportedOperationException("Not implemented yet");
+        Assert.notNull(participant.getName(), "Name me");
+        return commandGateway.send(new JoinRoomCommand(roomId, participant.getName()));
+        //throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @PostMapping("/rooms/{roomId}/messages")
