@@ -16,7 +16,7 @@ public class ChatMessage {
     private String message;
     private String participant;
 
-    public ChatMessage() {
+    public ChatMessage(String participant, String roomId, String message) {
     }
 
     public ChatMessage(String participant, String roomId, String message, long timestamp) {

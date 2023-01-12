@@ -1,7 +1,11 @@
 package io.axoniq.labs.chat.query.rooms.messages;
 
+import io.axoniq.labs.chat.coreapi.RoomMessagesQuery;
+import org.axonframework.queryhandling.QueryHandler;
 import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class ChatMessageProjection {
@@ -14,7 +18,10 @@ public class ChatMessageProjection {
         this.updateEmitter = updateEmitter;
     }
 
-    // TODO: Create some event handlers that update this model when necessary.
+    @QueryHandler
+    public List<ChatMessage> handle(RoomMessagesQuery query){
+        return repository.findAllByRoomIdOrderByTimestamp(query.getRoomId());
+    }
 
     // TODO: Create the query handler to read data from this model.
 
